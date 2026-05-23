@@ -114,7 +114,7 @@ fun MainScreen(
                     }
                 }
 
-                state.tasks.isEmpty() -> {
+                filteredTasks.isEmpty() -> {
                     Text(
                         modifier = Modifier.padding(horizontal = 16.dp).align(Alignment.CenterHorizontally),
                         text = "No tasks for today! Enjoy your free time :)",
