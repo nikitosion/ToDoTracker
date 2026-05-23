@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class TasksViewModel (private val tasksRepository: FakeRepository) : ViewModel() {
+class TasksViewModel(private val tasksRepository: FakeRepository) : ViewModel() {
 
     private val _state = MutableStateFlow(TasksState(isLoading = true))
     val state: StateFlow<TasksState> = _state
@@ -36,6 +36,26 @@ class TasksViewModel (private val tasksRepository: FakeRepository) : ViewModel()
     fun onQueryChanged(newQuery: String) {
         _state.update { currentState ->
             currentState.copy(query = newQuery)
+        }
+    }
+
+    fun saveTask(title: String, id: Long? = null) {
+        viewModelScope.launch {
+            val updatedTask = tasksRepository.updateTask(id ?: -1, title)
+
+            if (updatedTask == null) {
+                tasksRepository.addTask(title)
+            }
+            val updatedTasksList = tasksRepository.getTasks().map { taskEntity ->
+                Task(
+                    id = taskEntity.id,
+                    title = taskEntity.title,
+                    isDone = taskEntity.isDone
+                )
+            }
+            _state.update { currentState ->
+                currentState.copy(tasks = updatedTasksList)
+            }
         }
     }
 

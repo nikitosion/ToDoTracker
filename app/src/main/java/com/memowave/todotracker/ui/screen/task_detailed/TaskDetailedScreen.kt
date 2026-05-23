@@ -8,11 +8,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,21 +19,23 @@ import com.memowave.todotracker.domain.Task
 import com.memowave.todotracker.ui.screen.TasksViewModel
 
 @Composable
-fun TaskDetailedRoute(id: Long, tasksViewModel: TasksViewModel, onBack: () -> Unit) {
+fun TaskDetailedRoute(
+    id: Long,
+    tasksViewModel: TasksViewModel,
+    onBack: () -> Unit,
+    onEdit: (Long) -> Unit
+) {
+    val state by tasksViewModel.state.collectAsState()
+    val task = state.tasks.firstOrNull { it.id == id }
 
-    var task by remember { mutableStateOf<Task?>(null) }
-
-    LaunchedEffect(task?.isDone) {
-        task = tasksViewModel.getTaskById(id)
-    }
-
-    TaskDetailedScreen(task, onBack, onTaskToggle = tasksViewModel::onTaskToggle)
+    TaskDetailedScreen(task, onBack, onTaskToggle = tasksViewModel::onTaskToggle, onEdit = onEdit)
 }
 
 @Composable
 fun TaskDetailedScreen(
     task: Task?,
-    onBack: () -> Unit = {},
+    onBack: () -> Unit,
+    onEdit: (Long) -> Unit,
     onTaskToggle: (Long, Boolean) -> Unit
 ) {
     Column(
@@ -64,7 +63,18 @@ fun TaskDetailedScreen(
                     },
                     contentDescription = "Toggle done"
                 )
-                Text(text = "Mark ${if (task.isDone) "undone" else "done"}")
+                Text(text = "Отметить ${if (task.isDone) "невыполненным" else "выполненным"}")
+            }
+            Button(
+                modifier = Modifier.padding(top = 4.dp),
+                onClick = { onEdit(task.id) }
+            ) {
+                Icon(
+                    modifier = Modifier.padding(end = 8.dp),
+                    painter = painterResource(id = R.drawable.round_edit_24),
+                    contentDescription = "Toggle done"
+                )
+                Text(text = "Редактировать")
             }
             Button(
                 modifier = Modifier.padding(top = 4.dp),
@@ -75,7 +85,7 @@ fun TaskDetailedScreen(
                     painter = painterResource(id = R.drawable.round_arrow_back_24),
                     contentDescription = "Toggle done"
                 )
-                Text(text = "Go back")
+                Text(text = "Назад")
             }
         }
     }
@@ -89,5 +99,5 @@ fun TaskDetailedScreenPreview() {
         title = "Task title",
         isDone = true
     )
-    TaskDetailedScreen(task, onBack = {}, onTaskToggle = { _, _ -> })
+    TaskDetailedScreen(task, onBack = {}, onTaskToggle = { _, _ -> }, onEdit = {})
 }
