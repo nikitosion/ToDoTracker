@@ -38,4 +38,27 @@ class FakeRepository {
         tasks[taskInd] = updatedTask
         return updatedTask
     }
+
+    suspend fun updateTask(taskId: Long, title: String): TaskEntity? {
+        delay(500)
+        val taskInd = tasks.indexOfFirst { it.id == taskId }
+        if (taskInd < 0) {
+            return null
+        }
+
+        val updatedTask = tasks[taskInd].copy(title = title)
+        tasks[taskInd] = updatedTask
+        return updatedTask
+    }
+
+    suspend fun addTask(title: String): TaskEntity {
+        delay(500)
+        val newTask = TaskEntity(
+            id = System.currentTimeMillis(),
+            title = title,
+            isDone = false
+        )
+        tasks.add(newTask)
+        return newTask
+    }
 }

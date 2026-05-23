@@ -3,6 +3,7 @@ package com.memowave.todotracker.ui.screen.main
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
@@ -31,7 +33,12 @@ import com.memowave.todotracker.ui.screen.TasksViewModel
 import com.memowave.todotracker.domain.Task as TaskItem
 
 @Composable
-fun MainScreenRoute(viewModel: TasksViewModel = viewModel(), onTaskClick: (Long) -> Unit, onSettingsClick: () -> Unit) {
+fun MainScreenRoute(
+    viewModel: TasksViewModel = viewModel(),
+    onTaskClick: (Long) -> Unit,
+    onSettingsClick: () -> Unit,
+    onAddClick: () -> Unit
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -44,6 +51,7 @@ fun MainScreenRoute(viewModel: TasksViewModel = viewModel(), onTaskClick: (Long)
             viewModel.onTaskToggle(taskId, invertedDone)
         },
         onQueryChanged = viewModel::onQueryChanged,
+        onAddClick = onAddClick,
         onTaskClick = onTaskClick,
         onSettingsClick = onSettingsClick
     )
@@ -54,6 +62,7 @@ fun MainScreen(
     state: TasksState,
     onQueryChanged: (String) -> Unit,
     toggleTask: (Long, Boolean) -> Unit,
+    onAddClick: () -> Unit,
     onTaskClick: (Long) -> Unit,
     onSettingsClick: () -> Unit
 ) {
@@ -116,7 +125,9 @@ fun MainScreen(
 
                 filteredTasks.isEmpty() -> {
                     Text(
-                        modifier = Modifier.padding(horizontal = 16.dp).align(Alignment.CenterHorizontally),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .align(Alignment.CenterHorizontally),
                         text = "No tasks for today! Enjoy your free time :)",
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -127,7 +138,8 @@ fun MainScreen(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
                         items(filteredTasks) { task ->
                             TaskItem(
@@ -141,6 +153,21 @@ fun MainScreen(
                     }
                 }
             }
+        }
+
+        FloatingActionButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            onClick = {
+                onAddClick()
+            }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.round_add_24),
+                contentDescription = "Add task button",
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
         }
     }
 }
@@ -160,7 +187,8 @@ fun MainScreenPreview() {
         onQueryChanged = { },
         toggleTask = { _, _ -> },
         onTaskClick = { },
-        onSettingsClick = { }
+        onSettingsClick = { },
+        onAddClick = { }
     )
 }
 
@@ -172,7 +200,8 @@ fun MainScreenEmptyPreview() {
         onQueryChanged = { },
         toggleTask = { _, _ -> },
         onTaskClick = { },
-        onSettingsClick = { }
+        onSettingsClick = { },
+        onAddClick = { }
     )
 }
 
@@ -184,6 +213,7 @@ fun MainScreenLoadingPreview() {
         onQueryChanged = { },
         toggleTask = { _, _ -> },
         onTaskClick = { },
-        onSettingsClick = {}
+        onSettingsClick = {},
+        onAddClick = { }
     )
 }
