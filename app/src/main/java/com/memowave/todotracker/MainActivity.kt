@@ -4,44 +4,61 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.memowave.todotracker.ui.navigation.NavGraph
+import com.memowave.todotracker.ui.theme.ThemeType
+import com.memowave.todotracker.ui.theme.ThemeViewModel
 import com.memowave.todotracker.ui.theme.TodoTrackerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
-            TodoTrackerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            TodoTracker()
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun TodoTracker() {
+    val navController = rememberNavController()
+    val themeViewModel: ThemeViewModel = viewModel()
+    val themeType by themeViewModel.theme.collectAsStateWithLifecycle()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TodoTrackerTheme {
-        Greeting("Android")
+    val isDarkTheme = when (themeType) {
+        ThemeType.LIGHT -> false
+        ThemeType.DARK -> true
+    }
+
+    TodoTrackerTheme(darkTheme = isDarkTheme) {
+        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Surface(
+                modifier = Modifier
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .fillMaxSize()
+                    .padding(
+                        innerPadding
+                    ),
+            ) {
+                NavGraph(navController,
+                    currentTheme = themeType,
+                    onThemeChanged = { newTheme ->
+                        themeViewModel.setTheme(newTheme)
+                    })
+            }
+        }
     }
 }
